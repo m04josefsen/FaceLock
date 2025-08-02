@@ -1,6 +1,5 @@
 import threading
-import menu_icon
-import face_lock
+from face_lock import face_lock, menu_icon
 import argparse
 
 '''
@@ -23,4 +22,4 @@ if __name__ == "__main__":
     cam_thread = threading.Thread(target=face_lock.run_face_detection, args=(args,), daemon=True)
     cam_thread.start()
 
-    menu_icon.start_tray()
+    menu_icon.MenuIcon().run()

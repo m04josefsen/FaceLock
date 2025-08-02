@@ -39,8 +39,8 @@ def run_face_detection(args):
 
         if time.time() - last_seen_time > lock_delay:
             print("No face detected — locking screen.")
-            # os.system("pmset displaysleepnow")
-            os.system("""osascript -e 'tell application "System Events" to keystroke "q" using {control down, command down}'""")
+            os.system("pmset displaysleepnow")
+            # os.system("""osascript -e 'tell application "System Events" to keystroke "q" using {control down, command down}'""")
             break
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
