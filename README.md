@@ -27,6 +27,15 @@ pip install -r requirements.txt
 
 ## Usage
 TODO: eget bilde osv
+1. If you are using facial recognition, place an image of your face inside face_lock/
+Make sure the naming is correct in load_facial_recognition() in face_lock.py
+2. Run the app
+```bash
+python main.py
+```
+3. Choose whether or not to use facial recognition, and the amount of seconds before screen locks
+
+Make sure Terminal or your Python app has permissions to control the display (System Settings > Privacy & Security > Accessibility).
 
 ## Configuration
 - Camera Index: If the webcam doesn’t work, change the camera_index variable in face_lock.py (usually 0 or 1). 0 is usually your iPhone if "continuity camera" is turned on

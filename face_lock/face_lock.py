@@ -9,17 +9,16 @@ face_locations = []
 face_encodings = []
 face_names = []
 process_this_frame = True
-know_face_encodings = []
-know_face_names = []
+known_face_encodings = []
+known_face_names = []
+last_seen_time = time.time()
 
 def run_face_detection():
-    # TODO: meant to be enables/disabled by menu icon
-    #load_facial_recognition()
+    global last_seen_time
+    has_loaded_facial_recognition = False
 
-    # TODO: have in README
     # 0 or 1 based on Continous Camera
     camera_index = 1
-
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     video = cv2.VideoCapture(camera_index)
 
@@ -28,9 +27,12 @@ def run_face_detection():
         return
 
     last_seen_time = time.time()
-    #print(f"FaceLock started. Locking after {lock_delay}s of no face.")
 
     while True:
+        if not has_loaded_facial_recognition and settings.use_facial_recognition:
+            load_facial_recognition()
+            has_loaded_facial_recognition = True
+
         lock_delay = settings.selected_delay
 
         ret, frame = video.read()
@@ -38,24 +40,24 @@ def run_face_detection():
             print("Failed to read frame from webcam.")
             break
 
-        # TODO: temp / fjern
-        #use_facial_recognition(frame)
+        if settings.use_facial_recognition:
+            process_facial_recognition(frame)
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 5)
 
         # For debugging, cant run with menu_icon or with osascript
-        #display_camera(cv2, faces, frame, face_locations, face_names)
+        # display_camera(cv2, faces, frame, face_locations, face_names)
 
-        # TODO: denne må sammenligne med om jeg er sett, ikke len(faces)
-        if len(faces) > 0:
-            last_seen_time = time.time()
+        # If we are not using facial recognition, only detect amount of faces
+        if not settings.use_facial_recognition:
+            if len(faces) > 0:
+                last_seen_time = time.time()
         
-
         if time.time() - last_seen_time > lock_delay:
             print("No face detected — locking screen.")
-            os.system("pmset displaysleepnow")
-            # os.system("""osascript -e 'tell application "System Events" to keystroke "q" using {control down, command down}'""")
+            # os.system("pmset displaysleepnow")
+            os.system("""osascript -e 'tell application "System Events" to keystroke "q" using {control down, command down}'""")
             break
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -66,16 +68,16 @@ def run_face_detection():
     cv2.destroyAllWindows()
 
 def display_camera(cv2, faces, frame, face_locations, face_names):
+    '''
     # Without Facial Recognition
-    
     for (x, y, w, h) in faces:
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     cv2.imshow("FaceLock - Press Q to quit", frame)
-    
     '''
+    
     # With Facial Recognition
     for (top, right, bottom, left), name in zip(face_locations, face_names):
-        # Scale back up face locations since the frame we detected in was scaled to 1/4 size
+        # Scale back up face locations from 1/4
         top *= 4
         right *= 4
         bottom *= 4
@@ -89,21 +91,33 @@ def display_camera(cv2, faces, frame, face_locations, face_names):
         font = cv2.FONT_HERSHEY_DUPLEX
         cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
 
-    # Display the resulting image
     cv2.imshow('FaceLock - Press Q to quit', frame)
-    '''
+    
 
 def load_facial_recognition():
+    global known_face_encodings, known_face_names
+
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    user_image_path = os.path.join(script_dir, "marco_josefsen.jpg")
+    user_image_path = os.path.join(script_dir, "user.jpg")
 
     user_image = face_recognition.load_image_file(user_image_path)
-    user_face_encoding = face_recognition.face_encodings(user_image)[0]
+    encodings = face_recognition.face_encodings(user_image)
+
+    if not encodings:
+        raise ValueError("No face found in the training image")
+    
+    user_face_encoding = encodings[0]
 
     known_face_encodings.append(user_face_encoding)
-    known_face_names.append("Marco Josefsen")
+    known_face_names.append("user")
 
-def use_facial_recognition(frame):
+def process_facial_recognition(frame):
+    global face_locations, face_encodings, face_names
+    global process_this_frame
+    global known_face_encodings, known_face_names
+    global last_seen_time
+
+    # Based on: https://github.com/ageitgey/face_recognition?tab=readme-ov-file
     # Only process every other frame of video to save time
     if process_this_frame:
         # Resize frame
@@ -113,22 +127,36 @@ def use_facial_recognition(frame):
         # Get face bounding boxes
         face_locations = face_recognition.face_locations(rgb_small_frame)
 
-        # Get encodings from bounding boxes (not landmarks!)
-        face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
-
+        # Only proceed if faces are found
         face_names = []
-        for face_encoding in face_encodings:
-            # See if the face is a match for the known face(s)
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
-            name = "Unknown"
+        if face_locations:
+            try:
+                rgb_small_frame = rgb_small_frame.astype(np.uint8)
+                
+                face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
-            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
-            best_match_index = np.argmin(face_distances)
-            if matches[best_match_index]:
-                name = known_face_names[best_match_index]
-                # TODO: la til denne for å oppdatere tid her, men den detecter ikke meg
-                #last_seen_time = time.time()
+                for face_encoding in face_encodings:
+                    # See if the face is a match for the known face(s)
+                    matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+                    name = "Unknown"
 
-            face_names.append(name)
+                    if known_face_encodings: 
+                        face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
+                        best_match_index = np.argmin(face_distances)
+                        if matches[best_match_index]:
+                            name = known_face_names[best_match_index]
+                            # Update last seen time when a known face is detected
+                            last_seen_time = time.time()
 
-        process_this_frame = not process_this_frame
+                    face_names.append(name)
+            except Exception as e:
+                print(f"Error in facial recognition processing: {e}")
+                # If facial recognition fails, fall back to simple face detection
+                if face_locations:
+                    last_seen_time = time.time()
+                face_encodings = []
+                face_names = ["Face Detected" for _ in face_locations]
+        else:
+            face_encodings = []
+
+    process_this_frame = not process_this_frame

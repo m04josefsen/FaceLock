@@ -18,12 +18,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     '''
 
-    #face_lock.run_face_detection()
+    # face_lock.run_face_detection()
 
-    
     # Run face detection in background thread
     cam_thread = threading.Thread(target=face_lock.run_face_detection, daemon=True)
     cam_thread.start()
 
     menu_icon.MenuIcon().run()
-    

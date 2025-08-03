@@ -23,15 +23,15 @@ class MenuIcon(rumps.App):
     @rumps.clicked("Use Facial Recognition")
     def facial_recognition(self, sender):
         sender.state = not sender.state
-        rumps.alert("Test")
+        settings.use_facial_recognition = sender.state
+        print(f"Facial Recognition {'enabled' if sender.state else 'disabled'}")
 
     @rumps.clicked("Seconds")
     def set_seconds(self, sender):
         delay = int(sender.title.split()[0])
         settings.selected_delay = delay
         self.update_seconds_menu(sender.title)
-        #rumps.notification("Delay Updated", "", f"Delay set to {delay} seconds")
-        print(settings.selected_delay)
+        print(f"Lock Delay set to {delay} seconds")
 
     def update_seconds_menu(self, selected_title):
         for title in ["5 seconds", "10 seconds", "30 seconds"]:
