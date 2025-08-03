@@ -3,6 +3,7 @@ import face_recognition
 import time
 import os
 import numpy as np
+from face_lock import settings
 
 face_locations = []
 face_encodings = []
@@ -11,11 +12,9 @@ process_this_frame = True
 know_face_encodings = []
 know_face_names = []
 
-def run_face_detection(args):
+def run_face_detection():
     # TODO: meant to be enables/disabled by menu icon
     #load_facial_recognition()
-
-    lock_delay = args.sec
 
     # TODO: have in README
     # 0 or 1 based on Continous Camera
@@ -29,9 +28,11 @@ def run_face_detection(args):
         return
 
     last_seen_time = time.time()
-    print(f"FaceLock started. Locking after {lock_delay}s of no face.")
+    #print(f"FaceLock started. Locking after {lock_delay}s of no face.")
 
     while True:
+        lock_delay = settings.selected_delay
+
         ret, frame = video.read()
         if not ret:
             print("Failed to read frame from webcam.")
@@ -44,7 +45,7 @@ def run_face_detection(args):
         faces = face_cascade.detectMultiScale(gray, 1.1, 5)
 
         # For debugging, cant run with menu_icon or with osascript
-        display_camera(cv2, faces, frame, face_locations, face_names)
+        #display_camera(cv2, faces, frame, face_locations, face_names)
 
         # TODO: denne må sammenligne med om jeg er sett, ikke len(faces)
         if len(faces) > 0:
@@ -99,12 +100,8 @@ def load_facial_recognition():
     user_image = face_recognition.load_image_file(user_image_path)
     user_face_encoding = face_recognition.face_encodings(user_image)[0]
 
-    known_face_encodings = [
-        user_face_encoding,
-    ]
-    known_face_names = [
-        "Marco Josefsen",
-    ]
+    known_face_encodings.append(user_face_encoding)
+    known_face_names.append("Marco Josefsen")
 
 def use_facial_recognition(frame):
     # Only process every other frame of video to save time

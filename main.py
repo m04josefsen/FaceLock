@@ -12,16 +12,18 @@ Current TODO list:
 '''
 
 if __name__ == "__main__":
+    '''
     parser = argparse.ArgumentParser(description="TODO:")
     parser.add_argument("-s", "--sec", type=int, default=5, help="Lock Delay seconds")
     args = parser.parse_args()
-
-    face_lock.run_face_detection(args)
-    
     '''
+
+    #face_lock.run_face_detection()
+
+    
     # Run face detection in background thread
-    cam_thread = threading.Thread(target=face_lock.run_face_detection, args=(args,), daemon=True)
+    cam_thread = threading.Thread(target=face_lock.run_face_detection, daemon=True)
     cam_thread.start()
 
     menu_icon.MenuIcon().run()
-    '''
+    
