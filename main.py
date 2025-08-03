@@ -6,9 +6,9 @@ import argparse
 Current TODO list:
     - Facial recognition
     X Seconds as input, but keep 5 as standard
-    - Secomnd input in menubar?
+    X Secomnd input in menubar?
     X Actually locking screen when no face is detected
-    - Program doesnt stop after locking screen
+    X Program doesnt stop after locking screen
 '''
 
 if __name__ == "__main__":
