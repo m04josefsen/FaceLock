@@ -1,6 +1,6 @@
 # FaceLock
 
-> Python application to lock your MacBook when leaving the frame 
+> Python application to lock your MacBook when leaving the frame
 
 ## Requirments
 - macOS
@@ -38,3 +38,5 @@ Make sure Terminal or your Python app has permissions to control the display (Sy
 
 ## Configuration
 - Camera Index: If the webcam doesn’t work, change the camera_index variable in face_lock.py (usually 0 or 1). 0 is usually your iPhone if "continuity camera" is turned on
+
+![FaceLock](https://github.com/user-attachments/assets/457ba656-152b-4b5c-b8d5-2a2cb6ae84f0)
