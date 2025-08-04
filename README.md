@@ -26,7 +26,6 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-TODO: eget bilde osv
 1. If you are using facial recognition, place an image of your face inside face_lock/
 Make sure the naming is correct in load_facial_recognition() in face_lock.py
 2. Run the app

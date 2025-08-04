@@ -18,7 +18,7 @@ def run_face_detection():
     has_loaded_facial_recognition = False
 
     # 0 or 1 based on Continous Camera
-    camera_index = 1
+    camera_index = 0
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     video = cv2.VideoCapture(camera_index)
 
